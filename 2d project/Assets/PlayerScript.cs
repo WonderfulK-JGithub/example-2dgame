@@ -42,21 +42,13 @@ public class PlayerScript : MonoBehaviour
 
 
         Debug.Log(onGround);
+
+
+
+        rigidB.velocity = new Vector2(hsp,vsp);
         
-
-        rigidB.velocity = new Vector3(hsp,vsp,0f);
-
-        
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "Wall") onGround = true;
-        Debug.Log("hje");
-    }
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "Wall") onGround = false;
-    }
+    
 
 }
