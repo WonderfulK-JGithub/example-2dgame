@@ -5,6 +5,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEditor.U2D.Path;
 using UnityEngine;
 
+
 public class PlayerScript : MonoBehaviour
 {
     public float spd;
@@ -27,34 +28,35 @@ public class PlayerScript : MonoBehaviour
     {
         float left = Input.GetKey(KeyCode.A) ? 1f : 0f;
         float right = Input.GetKey(KeyCode.D) ? 1f : 0f;
+        float up = Input.GetKey(KeyCode.W) ? 1f : 0f;
+        float down = Input.GetKey(KeyCode.S) ? 1f : 0f;
 
         float hsp = (right - left) * spd * Time.deltaTime * 60f;
+        float vsp = (up - down) * spd * Time.deltaTime * 60f;
 
-        
-        
-        var vCol = Physics2D.Raycast(boxOrigin,Vector2.down,10f);
+       
 
-        if (vCol.collider != null && vCol.collider.tag == "Wall")
-        {
-            onGround = true;
-        }
-        else onGround = false;
+        RaycastHit2D[] vCol = Physics2D.RaycastAll(transform.position, Vector2.down, 10f);
 
-        Debug.Log(vCol.collider);
 
-        if (onGround)
-        {
-            vsp = 0;
-        }
-        else
-        {
-            vsp -= gravity;
-        }
-        
+
+
+        Debug.Log(onGround);
         
 
         rigidB.velocity = new Vector3(hsp,vsp,0f);
 
         
     }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Wall") onGround = true;
+        Debug.Log("hje");
+    }
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Wall") onGround = false;
+    }
+
 }
