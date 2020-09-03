@@ -10,45 +10,71 @@ public class PlayerScript : MonoBehaviour
 {
     public float spd;
     public float gravity;
+    public float jumpForce;
     private Rigidbody2D rigidB;
     private BoxCollider2D boxC;
+    private bool onGround = false;
+    
+    private float hsp;
     private float vsp;
-    private bool onGround;
-    private Vector2 boxOrigin;
+    private float jumpTime;
+
     // Start is called before the first frame update
     void Start()
     {
         rigidB = GetComponent<Rigidbody2D>();
         boxC = GetComponent<BoxCollider2D>();
-        boxOrigin = new Vector2(transform.position.x + boxC.offset.x, transform.position.y + boxC.offset.y);
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        float left = Input.GetKey(KeyCode.A) ? 1f : 0f;
-        float right = Input.GetKey(KeyCode.D) ? 1f : 0f;
-        float up = Input.GetKey(KeyCode.W) ? 1f : 0f;
-        float down = Input.GetKey(KeyCode.S) ? 1f : 0f;
-
-        float hsp = (right - left) * spd * Time.deltaTime * 60f;
-        float vsp = (up - down) * spd * Time.deltaTime * 60f;
-
-       
-
-        RaycastHit2D[] vCol = Physics2D.RaycastAll(transform.position, Vector2.down, 10f);
-
-
-
-
-        Debug.Log(onGround);
-
-
-
-        rigidB.velocity = new Vector2(hsp,vsp);
         
     }
 
+    // Update is called once per frame
+    void Update()
+    {
+        float left = Input.GetKey(KeyCode.A) ? 1f : 0f;
+        float right = Input.GetKey(KeyCode.D) ? 1f : 0f;
+        
+
+        hsp = (right - left) * spd * Time.deltaTime;
+
+
+
+        if (!onGround)
+        {
+            vsp -= gravity * Time.deltaTime;
+        }
+        else
+        {
+            vsp = 0;
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                vsp = jumpForce;
+                onGround = false;
+                jumpTime = 15f;
+            }
+        }
+        if(jumpTime > 0f)
+        {
+            if (Input.GetKey(KeyCode.Space))
+            {
+                jumpTime -= 60f * Time.deltaTime;
+                vsp = jumpForce;
+            }
+            else jumpTime = 0f;
+
+        }
+        
+    }
+    void FixedUpdate()
+    {
+        //rigidB.velocity = new Vector2(hsp,vsp);
+        rigidB.MovePosition((Vector2)transform.position + new Vector2(hsp, vsp));
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "ground") onGround = true;
+    }
     
+
 
 }
