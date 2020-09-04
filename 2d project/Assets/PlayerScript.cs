@@ -11,48 +11,91 @@ public class PlayerScript : MonoBehaviour
     public float spd;
     public float gravity;
     public float jumpForce;
+
+    public Transform attackPoint;
+    public float attackRange;
+
     private Rigidbody2D rigidB;
-    private BoxCollider2D boxC;
     private bool onGround = false;
     
     private float hsp;
     private float vsp;
     private float jumpTime;
 
+
+    public enum PlayerState
+    {
+        free,
+        attack
+    }
+
+    public PlayerState state;
     // Start is called before the first frame update
     void Start()
     {
         rigidB = GetComponent<Rigidbody2D>();
-        boxC = GetComponent<BoxCollider2D>();
+        
+        state = PlayerState.free;
         
     }
 
     // Update is called once per frame
     void Update()
     {
-        float left = Input.GetKey(KeyCode.A) ? 1f : 0f;
-        float right = Input.GetKey(KeyCode.D) ? 1f : 0f;
+        float left = 0;
+        float right = 0;
+
         
 
+        switch (state)
+        {
+            case PlayerState.free:
+            {
+                left = Input.GetKey(KeyCode.A) ? 1f : 0f;
+                right = Input.GetKey(KeyCode.D) ? 1f : 0f;
+
+                if(onGround && Input.GetKeyDown(KeyCode.Space))
+                {
+                    vsp = jumpForce;
+                    onGround = false;
+                    jumpTime = 15f;
+                    
+                }
+                
+                if(Input.GetKeyDown(KeyCode.LeftShift))
+                {
+                    state = PlayerState.attack;
+                }
+                break;
+            }
+            case PlayerState.attack:
+            {
+
+                
+                if (onGround)
+                {
+                    left = Input.GetKey(KeyCode.A) ? 1f : 0f;
+                    right = Input.GetKey(KeyCode.D) ? 1f : 0f;
+                }
+               
+
+                if (Input.GetKeyDown(KeyCode.LeftShift))
+                {
+                    state = PlayerState.attack;
+                }
+                break;
+            }
+
+        }
+
         hsp = (right - left) * spd * Time.deltaTime;
-
-
-
         if (!onGround)
         {
             vsp -= gravity * Time.deltaTime;
         }
-        else
-        {
-            vsp = 0;
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                vsp = jumpForce;
-                onGround = false;
-                jumpTime = 15f;
-            }
-        }
-        if(jumpTime > 0f)
+        else vsp = 0;
+
+        if (jumpTime > 0f)
         {
             if (Input.GetKey(KeyCode.Space))
             {
@@ -62,7 +105,6 @@ public class PlayerScript : MonoBehaviour
             else jumpTime = 0f;
 
         }
-        
     }
     void FixedUpdate()
     {
@@ -74,7 +116,10 @@ public class PlayerScript : MonoBehaviour
     {
         if (collision.gameObject.tag == "ground") onGround = true;
     }
-    
 
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
 
 }
