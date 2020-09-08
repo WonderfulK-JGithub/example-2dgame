@@ -11,9 +11,12 @@ public class PlayerScript : MonoBehaviour
     public float spd;
     public float gravity;
     public float jumpForce;
+    public float groundDistance;
 
     public Transform attackPoint;
     public float attackRange;
+    public LayerMask enemyLayers;
+    public LayerMask groundLayers;
 
     private Rigidbody2D rigidB;
     private bool onGround = false;
@@ -45,7 +48,11 @@ public class PlayerScript : MonoBehaviour
         float left = 0;
         float right = 0;
 
-        
+        if (Physics2D.Raycast((Vector2)transform.position - Vector2.left, Vector2.down, groundDistance,groundLayers) || Physics2D.Raycast((Vector2)transform.position - Vector2.right, Vector2.down, groundDistance, groundLayers))
+        {
+            onGround = true;
+        }
+        else onGround = false;
 
         switch (state)
         {
@@ -70,23 +77,30 @@ public class PlayerScript : MonoBehaviour
             }
             case PlayerState.attack:
             {
+                    Debug.Log("attacked");
+                Collider2D[] enemyHits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
 
-                
-                if (onGround)
+                    
+
+                foreach(Collider2D enemy in enemyHits)
+                {
+                    enemy.GetComponent<EnemySlime>().Damage();
+                }
+
+                if (!onGround)
                 {
                     left = Input.GetKey(KeyCode.A) ? 1f : 0f;
                     right = Input.GetKey(KeyCode.D) ? 1f : 0f;
                 }
                
 
-                if (Input.GetKeyDown(KeyCode.LeftShift))
-                {
-                    state = PlayerState.attack;
-                }
+                
                 break;
             }
 
         }
+
+        
 
         hsp = (right - left) * spd * Time.deltaTime;
         if (!onGround)
@@ -112,11 +126,7 @@ public class PlayerScript : MonoBehaviour
         rigidB.MovePosition((Vector2)transform.position + new Vector2(hsp, vsp));
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "ground") onGround = true;
-    }
-
+    
     private void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
